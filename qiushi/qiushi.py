@@ -19,23 +19,53 @@ class QSBK:
             request = urllib2.Request(url, headers = self.headers)
             response = urllib2.urlopen(request)
             pageCode = response.read().decode('utf-8')
-            r3eturn pageCode
+            return pageCode
         except urllib2.URLError, e:
             if hasattr(e, "reason"):
                 print(u"连接失败", e.reason)
                 return None
 
-    def get(self, pageIndex):
+    def getItem(self, pageIndex):
         pageCode = self.getPage(pageIndex)
-        soup = BeautifulSoup(response.read(), "lxml")
+        soup = BeautifulSoup(pageCode, "lxml")
         content = soup.find_all("div",class_="content")
-        self.pagecount += 1
+        pageStory = []
         for x in content:
-            self.story.append(x.get_text())
+            if x.get_text()!= '\n':
+                pageStory.append(x.get_text())
 
-        return self.story
+        return pageStory
 
     def loadPage(self):
         if self.enable == True:
-            if len(self.pagecount) < 2:
-                pageS
+            if self.pagecount < 2:
+                pageStory = self.getItem(self.pageIndex)
+                if pageStory:
+                    self.story.append(pageStory)
+                    self.pageIndex += 1
+                    self.pagecount += 1
+
+    def getOneStory(self, pageStory, page):
+        for story in pageStory:
+            input = raw_input()
+            self.loadPage()
+            if input == "Q":
+                self.enable = False
+                return
+            print(story)
+
+    def start(self):
+        print(u"正在读取糗事百科")
+        self.enable = True
+        self.loadPage()
+        nowPage = 0
+        while self.enable:
+            if self.pagecount > 0:
+                pageStory = self.story[0]
+                nowPage += 1
+                del self.story[0]
+                self.pagecount -= 1
+                self.getOneStory(pageStory, nowPage)
+
+spider = QSBK()
+spider.start()
